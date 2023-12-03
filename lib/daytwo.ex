@@ -78,11 +78,12 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
   end
 
   def first do
+    bag = %{"red" => 12, "green" => 13, "blue" => 14}
+
     DayTwo.base()
     |> Enum.map(fn game ->
       gid = game["game"]
       sets = game["sets"]
-      bag = %{"red" => 12, "green" => 13, "blue" => 14}
 
       case sets |> Enum.all?(fn set -> set_is_possible(set, bag) end) do
         true -> gid
