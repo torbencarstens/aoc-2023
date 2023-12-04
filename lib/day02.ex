@@ -17,8 +17,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
     content = if use_sample, do: sample(), else: input()
 
     content
-    |> String.split("\n")
-    |> Enum.filter(fn line -> line != "" end)
+    |> String.split("\n", trim: true)
     |> Enum.map(fn l -> parse_line(l) end)
   end
 
@@ -44,8 +43,8 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
             |> Enum.filter(fn {c, _} -> c == color end)
           end)
           |> List.flatten()
-          |> Enum.map(fn {_, c} -> c end)
-          |> Enum.reduce(0, fn c, m -> max(c, m) end)
+          |> Enum.map(&elem(&1, 1))
+          |> Enum.reduce(0, &max/2)
 
         %{acc | color => counts}
       end
@@ -57,37 +56,31 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
 
     Regex.scan(re, s, [:all_but_first])
     |> List.flatten()
-    |> Enum.filter(fn e -> !String.contains?(e, " ") end)
+    |> Enum.filter(&(!String.contains?(&1, " ")))
     |> Enum.chunk_every(2)
-    |> Enum.reduce(%{}, fn [count, color], acc ->
-      {count, _} = Integer.parse(count)
-      Map.merge(acc, %{color => count})
-    end)
+    |> Enum.map(fn [count, color] -> {color, String.to_integer(count)} end)
+    |> Map.new()
   end
 
   def parse_line(line) do
+    [game, sets] = String.split(line, ": ")
     # perfection
-    {gid, _} = Integer.parse(List.last(String.split(List.first(String.split(line, ": ")), " ")))
+    gid = game |> String.split(" ") |> List.last() |> String.to_integer()
 
     sets =
-      line
-      |> String.split(": ")
-      |> List.last()
+      sets
       |> String.split("; ")
-      |> Enum.map(fn s -> parse_set(s) end)
+      |> Enum.map(&parse_set/1)
 
-    %{"game" => gid, "sets" => sets}
+    %{:game => gid, :sets => sets}
   end
 
   def first(use_sample \\ false) do
     bag = %{"red" => 12, "green" => 13, "blue" => 14}
 
     DayTwo.base(use_sample)
-    |> Enum.map(fn game ->
-      gid = game["game"]
-      sets = game["sets"]
-
-      case sets |> Enum.all?(fn set -> set_is_possible(set, bag) end) do
+    |> Enum.map(fn %{:game => gid, :sets => sets} ->
+      case sets |> Enum.all?(&set_is_possible(&1, bag)) do
         true -> gid
         false -> 0
       end
@@ -98,10 +91,11 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
 
   def second(use_sample \\ false) do
     DayTwo.base(use_sample)
-    |> Enum.map(fn game ->
-      game["sets"]
+    |> Enum.map(fn %{:sets => sets} ->
+      sets
       |> min_per_color
-      |> Enum.reduce(1, fn {_, c}, acc -> c * acc end)
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.reduce(1, &*/2)
     end)
     |> List.flatten()
     |> Enum.sum()

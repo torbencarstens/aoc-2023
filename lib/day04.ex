@@ -76,7 +76,8 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
 
     initial_state =
       winnings
-      |> Enum.map(fn {k, _} -> {k, 1} end)
+      |> Map.keys()
+      |> Enum.map(&({&1, 1}))
       |> Map.new()
 
     max_key = Enum.max(winnings |> Map.keys())

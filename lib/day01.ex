@@ -26,8 +26,7 @@ zoneight234
     content = if use_sample, do: sample(part), else: input()
 
     content
-    |> String.split("\n")
-    |> Enum.filter(fn line -> line != "" end)
+    |> String.split("\n", trim: true)
   end
 
   def convert(s) do
@@ -45,37 +44,22 @@ zoneight234
     end
   end
 
+  def assemble_number([x]), do: assemble_number([x, x])
+  def assemble_number([x, y]), do: "#{x}#{y}"
+  def assemble_number([x | rest]), do: assemble_number([x, rest |> Enum.take(-1)])
+
+  def parse_number(x) when is_bitstring(x), do: parse_number({x, Integer.parse(x)})
+  def parse_number({x, {_, _}}), do: x
+  def parse_number({x, :error}), do: convert(x)
+
   def first(use_sample \\ false) do
     re = ~r/([0-9])/
 
     DayOne.base(use_sample, 1)
-    |> Enum.map(fn l -> Regex.scan(re, l) end)
-    |> Enum.map(fn m -> m |> List.flatten() end)
-    |> Enum.map(fn l ->
-      l
-      |> Enum.filter(fn m -> m != "" end)
-      |> Enum.map(fn x ->
-        {_v, _} = Integer.parse(x)
-        x
-      end)
-    end)
-    |> Enum.map(fn l ->
-      case l do
-        [x] ->
-          "#{x}#{x}"
-
-        [x, y] ->
-          "#{x}#{y}"
-
-        [x | rest] ->
-          y = rest |> Enum.take(-1)
-          "#{x}#{y}"
-      end
-    end)
-    |> Enum.map(fn s ->
-      {v, _} = Integer.parse(s)
-      v
-    end)
+    |> Enum.map(&Regex.scan(re, &1))
+    |> Enum.map(&List.flatten(&1))
+    |> Enum.map(&assemble_number/1)
+    |> Enum.map(&String.to_integer/1)
     |> Enum.sum()
   end
 
@@ -83,35 +67,15 @@ zoneight234
     re = ~r/(?=(zero|one|two|three|four|five|six|seven|eight|nine|[0-9]))/
 
     DayOne.base(use_sample, 2)
-    |> Enum.map(fn l -> Regex.scan(re, l) end)
-    |> Enum.map(fn m -> m |> List.flatten() end)
-    |> Enum.map(fn l ->
-      l
-      |> Enum.filter(fn m -> m != "" end)
-      |> Enum.map(fn x ->
-        case Integer.parse(x) do
-          {_, _} -> x
-          :error -> convert(x)
-        end
-      end)
+    |> Enum.map(&Regex.scan(re, &1))
+    |> Enum.map(&(&1 |> List.flatten()))
+    |> Enum.map(fn line ->
+      line
+      |> Enum.filter(&(&1 != ""))
+      |> Enum.map(&parse_number/1)
     end)
-    |> Enum.map(fn l ->
-      case l do
-        [x] ->
-          "#{x}#{x}"
-
-        [x, y] ->
-          "#{x}#{y}"
-
-        [x | rest] ->
-          y = rest |> Enum.take(-1)
-          "#{x}#{y}"
-      end
-    end)
-    |> Enum.map(fn s ->
-      {v, _} = Integer.parse(s)
-      v
-    end)
+    |> Enum.map(&assemble_number/1)
+    |> Enum.map(&String.to_integer/1)
     |> Enum.sum()
   end
 end
