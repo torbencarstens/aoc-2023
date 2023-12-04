@@ -1,0 +1,23 @@
+name: Workflow
+on:
+  push:
+    branches: [ main ]
+  pull_request: { }
+
+
+jobs:
+  validate-renovate-config:
+    name: Validate Renovate configuration
+    uses: BlindfoldedSurgery/renovate-config/.github/workflows/validate.yml@main
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+      - uses: asdf-vm/actions/install@v3
+      - name: Get dependencies
+        run: mix deps.get
+      - name: Run tests
+        run: mix test
