@@ -49,8 +49,7 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
   def first(use_sample \\ false) do
     base(use_sample)
     |> Enum.map(fn {_, count} -> count end)
-    |> Enum.filter(&(&1 > 0))
-    |> Enum.map(&(2 ** (&1 - 1)))
+    |> Enum.map(&(trunc(2 ** (&1 - 1))))
     |> Enum.sum()
   end
 
