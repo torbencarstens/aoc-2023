@@ -119,10 +119,11 @@ defmodule DayThree do
     File.read!("inputs/day03")
   end
 
-  def base do
-    #      DayThree.sample()
+  def base(use_sample) do
+    content = if use_sample, do: sample(), else: input()
+
     lines =
-      DayThree.input()
+      content
       |> String.split("\n")
       |> Enum.filter(fn line -> line != "" end)
       |> Enum.map(&String.graphemes/1)
@@ -161,8 +162,8 @@ defmodule DayThree do
     |> Enum.dedup()
   end
 
-  def first do
-    schematic = base()
+  def first(use_sample \\ false) do
+    schematic = base(use_sample)
 
     schematic
     |> part_numbers
@@ -183,8 +184,8 @@ defmodule DayThree do
     |> Enum.sum()
   end
 
-  def second do
-    schematic = base()
+  def second(use_sample \\ false) do
+    schematic = base(use_sample)
 
     schematic
     |> Schematic.find_gears()
@@ -214,6 +215,3 @@ defmodule DayThree do
     |> Enum.sum()
   end
 end
-
-#IO.inspect(DayThree.first())
-IO.inspect(DayThree.second())

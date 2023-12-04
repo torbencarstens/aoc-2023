@@ -13,8 +13,10 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
     File.read!("inputs/day02")
   end
 
-  def base do
-    DayTwo.input()
+  def base(use_sample) do
+    content = if use_sample, do: sample(), else: input()
+
+    content
     |> String.split("\n")
     |> Enum.filter(fn line -> line != "" end)
     |> Enum.map(fn l -> parse_line(l) end)
@@ -77,10 +79,10 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
     %{"game" => gid, "sets" => sets}
   end
 
-  def first do
+  def first(use_sample \\ false) do
     bag = %{"red" => 12, "green" => 13, "blue" => 14}
 
-    DayTwo.base()
+    DayTwo.base(use_sample)
     |> Enum.map(fn game ->
       gid = game["game"]
       sets = game["sets"]
@@ -94,8 +96,8 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
     |> Enum.sum()
   end
 
-  def second do
-    DayTwo.base()
+  def second(use_sample \\ false) do
+    DayTwo.base(use_sample)
     |> Enum.map(fn game ->
       game["sets"]
       |> min_per_color
@@ -105,6 +107,3 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
     |> Enum.sum()
   end
 end
-
-IO.inspect(DayTwo.first())
-IO.inspect(DayTwo.second())

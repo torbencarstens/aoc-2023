@@ -1,6 +1,10 @@
 Code.compiler_options(ignore_module_conflict: true)
 
 defmodule DayFour do
+  @moduledoc """
+  Solution for AoC day04 (https://adventofcode.com/2023/day/4)
+"""
+
   def sample do
     "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
 Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
@@ -14,9 +18,10 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     File.read!("inputs/day04")
   end
 
-  def base do
-#    DayFour.sample()
-    DayFour.input()
+  def base(use_sample) do
+    content = if use_sample, do: sample(), else: input()
+
+    content
     |> String.split("\n")
     |> Enum.filter(fn line -> line != "" end)
   end
@@ -46,8 +51,8 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
   def calculate_card_points([_]), do: 1
   def calculate_card_points([_ | tail]), do: 2 * calculate_card_points(tail)
 
-  def first do
-    base()
+  def first(use_sample \\ false) do
+    base(use_sample)
     |> Enum.map(&parse_card/1)
     |> Enum.map(fn %{:winning => winning, :mine => mine} ->
       [winning, mine] |> Enum.map(&MapSet.new/1)
@@ -58,9 +63,9 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     |> Enum.sum()
   end
 
-  def second do
+  def second(use_sample \\ false) do
     winnings =
-      base()
+      base(use_sample)
       |> Enum.map(&parse_card/1)
       |> Enum.map(fn %{:card_id => cid, :winning => winning, :mine => mine} ->
         [winning, mine] = [winning, mine] |> Enum.map(&MapSet.new/1)
@@ -74,7 +79,7 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     result =
       Map.new(
         winnings
-        |> Enum.map(fn {k, v} -> {k, 1} end)
+        |> Enum.map(fn {k, _} -> {k, 1} end)
       )
 
     max_key = Enum.max(winnings |> Map.keys())
@@ -101,6 +106,3 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     |> Enum.sum()
   end
 end
-
-IO.inspect(DayFour.first(), charlists: :as_lists)
-IO.inspect(DayFour.second(), charlists: :as_lists)

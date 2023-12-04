@@ -1,19 +1,31 @@
 Code.compiler_options(ignore_module_conflict: true)
 
 defmodule DayOne do
-  def sample do
-    "1abc2
+  def sample(part) do
+    if part == 1 do
+      "1abc2
 pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet"
+    else
+      "two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen"
+    end
   end
 
   def input do
     File.read!("inputs/day01")
   end
 
-  def base do
-    DayOne.input()
+  def base(use_sample, part) do
+    content = if use_sample, do: sample(part), else: input()
+
+    content
     |> String.split("\n")
     |> Enum.filter(fn line -> line != "" end)
   end
@@ -33,25 +45,28 @@ treb7uchet"
     end
   end
 
-  def first do
+  def first(use_sample \\ false) do
     re = ~r/([0-9])/
 
-    DayOne.base()
+    DayOne.base(use_sample, 1)
     |> Enum.map(fn l -> Regex.scan(re, l) end)
     |> Enum.map(fn m -> m |> List.flatten() end)
     |> Enum.map(fn l ->
       l
       |> Enum.filter(fn m -> m != "" end)
       |> Enum.map(fn x ->
-        IO.inspect(x)
         {_v, _} = Integer.parse(x)
         x
       end)
     end)
     |> Enum.map(fn l ->
       case l do
-        [x] -> "#{x}#{x}"
-        [x, y] -> "#{x}#{y}"
+        [x] ->
+          "#{x}#{x}"
+
+        [x, y] ->
+          "#{x}#{y}"
+
         [x | rest] ->
           y = rest |> Enum.take(-1)
           "#{x}#{y}"
@@ -61,13 +76,13 @@ treb7uchet"
       {v, _} = Integer.parse(s)
       v
     end)
-    |> Enum.sum
+    |> Enum.sum()
   end
 
-  def second do
+  def second(use_sample \\ false) do
     re = ~r/(?=(zero|one|two|three|four|five|six|seven|eight|nine|[0-9]))/
 
-    DayOne.base()
+    DayOne.base(use_sample, 2)
     |> Enum.map(fn l -> Regex.scan(re, l) end)
     |> Enum.map(fn m -> m |> List.flatten() end)
     |> Enum.map(fn l ->
@@ -82,8 +97,12 @@ treb7uchet"
     end)
     |> Enum.map(fn l ->
       case l do
-        [x] -> "#{x}#{x}"
-        [x, y] -> "#{x}#{y}"
+        [x] ->
+          "#{x}#{x}"
+
+        [x, y] ->
+          "#{x}#{y}"
+
         [x | rest] ->
           y = rest |> Enum.take(-1)
           "#{x}#{y}"
@@ -93,8 +112,6 @@ treb7uchet"
       {v, _} = Integer.parse(s)
       v
     end)
-    |> Enum.sum
+    |> Enum.sum()
   end
 end
-
-IO.inspect(DayOne.first())
