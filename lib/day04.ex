@@ -74,10 +74,7 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     result =
       Map.new(
         winnings
-        |> Enum.map(fn {k, v} ->
-          c = if v > 0, do: 1, else: 0
-          {k, c}
-        end)
+        |> Enum.map(fn {k, v} -> {k, 1} end)
       )
 
     max_key = Enum.max(winnings |> Map.keys())
@@ -86,7 +83,7 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     |> Enum.sort(fn {k, _}, {k2, _} -> k < k2 end)
     |> Enum.reduce(result, fn {cid, length}, acco ->
       if length == 0 do
-        Map.update!(acco, cid, fn current -> current + 1 end)
+        acco
       else
         until = min(cid + length, max_key)
 
