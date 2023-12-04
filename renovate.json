@@ -7,11 +7,13 @@
     {
       "groupName": "elixir/erlang",
       "matchManagers": [
-        "asdf"
+        "asdf",
+        "mix"
       ],
       "matchDepNames": [
         "elixir",
-        "erlang"
+        "erlang",
+        "erlang/otp"
       ]
     }
   ]
