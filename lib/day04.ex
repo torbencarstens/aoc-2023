@@ -24,9 +24,11 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     content
     |> String.split("\n", trim: true)
     |> Enum.map(&parse_card/1)
-    |> Enum.map(fn %{:card_id => cid, :winning => winning, :mine => mine} ->
-      {cid, length(winning -- winning -- mine)}
+    |> Enum.map(fn %{:winning => winning, :mine => mine} ->
+      length(winning -- winning -- mine)
     end)
+    |> Enum.with_index(1)
+    |> Enum.map(fn {c, i} -> {i, c} end)
   end
 
   def parse_number_list(numbers) do
@@ -36,13 +38,9 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
   end
 
   def parse_card(line) do
-    ["Card" <> card_info, winning, mine] = String.split(line, [": ", " | "], trim: true)
-    #    [winning, mine] = String.split(numbers, " | ", trim: true)
-
-    card_id = String.to_integer(String.replace(card_info, " ", ""))
+    [_, winning, mine] = String.split(line, [": ", " | "], trim: true)
 
     %{
-      :card_id => card_id,
       :winning => parse_number_list(winning),
       :mine => parse_number_list(mine)
     }
