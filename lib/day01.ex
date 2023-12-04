@@ -48,9 +48,9 @@ zoneight234
   def assemble_number([x, y]), do: "#{x}#{y}"
   def assemble_number([x | rest]), do: assemble_number([x, rest |> Enum.take(-1)])
 
-  def parse_number(x) when is_bitstring(x), do: parse_number({x, Integer.parse(x)})
-  def parse_number({x, {_, _}}), do: x
   def parse_number({x, :error}), do: convert(x)
+  def parse_number({x, _}), do: x
+  def parse_number(x), do: parse_number({x, Integer.parse(x)})
 
   def first(use_sample \\ false) do
     re = ~r/([0-9])/
