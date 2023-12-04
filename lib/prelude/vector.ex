@@ -27,8 +27,8 @@ defmodule Vector do
   end
 
   def less(v1, v2) do
-    s1 = v1["start"]
-    s2 = v2["start"]
+    s1 = v1[:start]
+    s2 = v2[:start]
 
     if s1.y < s2.y do
       true

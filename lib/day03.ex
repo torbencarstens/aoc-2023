@@ -54,7 +54,7 @@ defmodule Schematic do
     |> Enum.map(&hd/1)
     |> Enum.map(fn m ->
       {si, length} = m
-      %{"start" => %Vector{x: si, y: lineno}, "end" => %Vector{x: si + length - 1, y: lineno}}
+      %{:start => %Vector{x: si, y: lineno}, :end => %Vector{x: si + length - 1, y: lineno}}
     end)
   end
 
@@ -144,9 +144,9 @@ defmodule DayThree do
     schematic
     |> Schematic.find_numbers()
     |> Enum.map(fn number ->
-      y = number["start"].y
+      y = number[:start].y
 
-      if number["start"].x..number["end"].x
+      if number[:start].x..number[:end].x
          |> Enum.map(fn x ->
            Schematic.neighbors(schematic, %Vector{x: x, y: y})
          end)
@@ -168,15 +168,15 @@ defmodule DayThree do
     schematic
     |> part_numbers
     |> Enum.map(fn number ->
-      y = number["start"].y
+      y = number[:start].y
 
-      if number["start"].x..number["end"].x
+      if number[:start].x..number[:end].x
          |> Enum.map(fn x ->
            Schematic.neighbors(schematic, %Vector{x: x, y: y})
          end)
          |> List.flatten()
          |> Enum.any?(&is_symbol/1) do
-        Schematic.get_number(schematic, number["start"].x, number["end"].x, y)
+        Schematic.get_number(schematic, number[:start].x, number[:end].x, y)
       else
         0
       end
@@ -194,7 +194,7 @@ defmodule DayThree do
       |> Enum.map(fn neighbor ->
         part_numbers(schematic)
         |> Enum.filter(fn part_number ->
-          Vector.contains(neighbor, part_number["start"], part_number["end"])
+          Vector.contains(neighbor, part_number[:start], part_number[:end])
         end)
       end)
     end)
@@ -208,7 +208,7 @@ defmodule DayThree do
     |> Enum.map(fn l ->
       l
       |> Enum.map(fn number ->
-        Schematic.get_number(schematic, number["start"].x, number["end"].x, number["start"].y)
+        Schematic.get_number(schematic, number[:start].x, number[:end].x, number[:start].y)
       end)
       |> Enum.reduce(1, fn x, acc -> acc * x end)
     end)
