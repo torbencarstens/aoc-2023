@@ -2,8 +2,8 @@ Code.compiler_options(ignore_module_conflict: true)
 
 defmodule DayFour do
   @moduledoc """
-  Solution for AoC day04 (https://adventofcode.com/2023/day/4)
-"""
+    Solution for AoC day04 (https://adventofcode.com/2023/day/4)
+  """
 
   def sample do
     "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
@@ -22,23 +22,20 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     content = if use_sample, do: sample(), else: input()
 
     content
-    |> String.split("\n")
-    |> Enum.filter(fn line -> line != "" end)
+    |> String.split("\n", trim: true)
   end
 
   def parse_number_list(numbers) do
     numbers
-    |> String.split(" ")
-    |> Enum.filter(fn s -> s != "" end)
-    |> Enum.map(&Integer.parse/1)
-    |> Enum.map(fn {v, _} -> v end)
+    |> String.split(" ", trim: true)
+    |> Enum.map(&String.to_integer/1)
   end
 
   def parse_card(line) do
-    [card_info, numbers] = String.split(line, ": ")
-    [winning, mine] = String.split(numbers, " | ")
+    ["Card" <> card_info, numbers] = String.split(line, ": ", trim: true)
+    [winning, mine] = String.split(numbers, " | ", trim: true)
 
-    {card_id, _} = Integer.parse(Enum.at(Regex.split(~r/\s+/, card_info), 1))
+    card_id = String.to_integer(String.replace(card_info, " ", ""))
 
     %{
       :card_id => card_id,
@@ -55,7 +52,8 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     base(use_sample)
     |> Enum.map(&parse_card/1)
     |> Enum.map(fn %{:winning => winning, :mine => mine} ->
-      [winning, mine] |> Enum.map(&MapSet.new/1)
+      [winning, mine]
+      |> Enum.map(&MapSet.new/1)
     end)
     |> Enum.map(fn [winning, mine] -> MapSet.intersection(winning, mine) end)
     |> Enum.map(&MapSet.to_list/1)
@@ -69,36 +67,31 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
       |> Enum.map(&parse_card/1)
       |> Enum.map(fn %{:card_id => cid, :winning => winning, :mine => mine} ->
         [winning, mine] = [winning, mine] |> Enum.map(&MapSet.new/1)
-        [cid, winning, mine]
+        {cid, winning, mine}
       end)
-      |> Enum.map(fn [cid, winning, mine] -> [cid, MapSet.intersection(winning, mine)] end)
-      |> Enum.reduce(%{}, fn [cid, won], acc ->
-        Map.merge(acc, %{cid => MapSet.to_list(won) |> length})
+      |> Enum.map(fn {cid, winning, mine} -> {cid, MapSet.intersection(winning, mine)} end)
+      |> Enum.reduce(%{}, fn {cid, won}, acc ->
+        Map.put(acc, cid, MapSet.size(won))
       end)
 
-    result =
-      Map.new(
-        winnings
-        |> Enum.map(fn {k, _} -> {k, 1} end)
-      )
+    initial_state =
+      winnings
+      |> Enum.map(fn {k, _} -> {k, 1} end)
+      |> Map.new()
 
     max_key = Enum.max(winnings |> Map.keys())
 
     winnings
-    |> Enum.sort(fn {k, _}, {k2, _} -> k < k2 end)
-    |> Enum.reduce(result, fn {cid, length}, acco ->
+    |> Enum.sort_by(&elem(&1, 0))
+    |> Enum.reduce(initial_state, fn {cid, length}, running_updates ->
       if length == 0 do
-        acco
+        running_updates
       else
         until = min(cid + length, max_key)
 
         (cid + 1)..until
-        |> Enum.reduce(acco, fn index, acc ->
-          if index > max_key do
-            acc
-          else
-            Map.update!(acc, index, fn current -> current + max(1, acco[cid]) end)
-          end
+        |> Enum.reduce(running_updates, fn index, acc ->
+          Map.update!(acc, index, fn current -> current + max(1, running_updates[cid]) end)
         end)
       end
     end)
