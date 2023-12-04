@@ -2,5 +2,17 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>BlindfoldedSurgery/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "groupName": "elixir/erlang",
+      "matchManagers": [
+        "asdf"
+      ],
+      "matchDepNames": [
+        "elixir",
+        "erlang"
+      ]
+    }
   ]
 }
