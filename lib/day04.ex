@@ -23,6 +23,10 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
 
     content
     |> String.split("\n", trim: true)
+    |> Enum.map(&parse_card/1)
+    |> Enum.map(fn %{:card_id => cid, :winning => winning, :mine => mine} ->
+      {cid, length(winning -- winning -- mine)}
+    end)
   end
 
   def parse_number_list(numbers) do
@@ -32,8 +36,8 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
   end
 
   def parse_card(line) do
-    ["Card" <> card_info, numbers] = String.split(line, ": ", trim: true)
-    [winning, mine] = String.split(numbers, " | ", trim: true)
+    ["Card" <> card_info, winning, mine] = String.split(line, [": ", " | "], trim: true)
+    #    [winning, mine] = String.split(numbers, " | ", trim: true)
 
     card_id = String.to_integer(String.replace(card_info, " ", ""))
 
@@ -44,58 +48,39 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     }
   end
 
-  def calculate_card_points([]), do: 0
-  def calculate_card_points([_]), do: 1
-  def calculate_card_points([_ | tail]), do: 2 * calculate_card_points(tail)
-
   def first(use_sample \\ false) do
     base(use_sample)
-    |> Enum.map(&parse_card/1)
-    |> Enum.map(fn %{:winning => winning, :mine => mine} ->
-      [winning, mine]
-      |> Enum.map(&MapSet.new/1)
-    end)
-    |> Enum.map(fn [winning, mine] -> MapSet.intersection(winning, mine) end)
-    |> Enum.map(&MapSet.to_list/1)
-    |> Enum.map(&calculate_card_points/1)
+    |> Enum.map(fn {_, count} -> count end)
+    |> Enum.filter(&(&1 > 0))
+    |> Enum.map(&(2 ** (&1 - 1)))
     |> Enum.sum()
   end
 
   def second(use_sample \\ false) do
     winnings =
       base(use_sample)
-      |> Enum.map(&parse_card/1)
-      |> Enum.map(fn %{:card_id => cid, :winning => winning, :mine => mine} ->
-        [winning, mine] = [winning, mine] |> Enum.map(&MapSet.new/1)
-        {cid, winning, mine}
-      end)
-      |> Enum.map(fn {cid, winning, mine} -> {cid, MapSet.intersection(winning, mine)} end)
-      |> Enum.reduce(%{}, fn {cid, won}, acc ->
-        Map.put(acc, cid, MapSet.size(won))
-      end)
-
-    initial_state =
-      winnings
-      |> Map.keys()
-      |> Enum.map(&({&1, 1}))
       |> Map.new()
 
     max_key = Enum.max(winnings |> Map.keys())
 
     winnings
     |> Enum.sort_by(&elem(&1, 0))
-    |> Enum.reduce(initial_state, fn {cid, length}, running_updates ->
-      if length == 0 do
-        running_updates
-      else
-        until = min(cid + length, max_key)
+    |> Enum.reduce(
+      winnings
+      |> Map.new(fn {k, _} -> {k, 1} end),
+      fn {cid, length}, running_updates ->
+        if length == 0 do
+          running_updates
+        else
+          until = min(cid + length, max_key)
 
-        (cid + 1)..until
-        |> Enum.reduce(running_updates, fn index, acc ->
-          Map.update!(acc, index, fn current -> current + max(1, running_updates[cid]) end)
-        end)
+          (cid + 1)..until
+          |> Enum.reduce(running_updates, fn index, acc ->
+            Map.update!(acc, index, fn current -> current + max(1, running_updates[cid]) end)
+          end)
+        end
       end
-    end)
+    )
     |> Map.values()
     |> Enum.sum()
   end
